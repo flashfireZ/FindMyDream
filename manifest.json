@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "FindMyDream",
+  "version": "2.0",
+  "description": "Extension avancée pour gérer vos liens favoris avec Firebase.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;"
+  }
+}
