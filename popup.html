@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FindMyDream</title>
-    <style>
+    <title>FindMyStream</title>
+<style>
     /* --- VARIABLES DE DESIGN --- */
     :root {
         --bg-gradient: linear-gradient(145deg, #1e2a53, #121a3a);
@@ -15,6 +15,7 @@
         --accent-glow: rgba(102, 126, 234, 0.5);
         --accent-gradient: linear-gradient(45deg, #626ee3, #8a5cf6);
         --error-color: #ff5252;
+        --success-gradient: linear-gradient(45deg, #27ae60, #229954);
         --radius-small: 8px;
         --radius-medium: 12px;
         --radius-large: 16px;
@@ -23,261 +24,255 @@
 
     /* --- STYLE DE BASE --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; } /* Assure que le body peut prendre toute la hauteur */
+    html, body { height: 100%; overflow: hidden; }
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         background: var(--bg-gradient);
         width: 360px;
-        min-height: 540px;
+        height: 550px;
         color: var(--text-primary);
         position: relative;
-    }
-
-    /* 
-    ================================================
-    --- STRUCTURE DE LA PAGE (CORRECTION PRINCIPALE) ---
-    ================================================
-    */
-    body {
         display: flex;
         flex-direction: column;
     }
-
-    /* Les deux enfants directs du body doivent pouvoir grandir */
-    .container, #authOverlay {
-        flex: 1; /* Permet à l'élément de prendre toute la place verticale disponible */
-        display: flex;
-        flex-direction: column;
-    }
-
-    #authOverlay {
-        justify-content: center; /* Centre le modal verticalement */
-        align-items: center;   /* Centre le modal horizontalement */
-        padding: 20px;
-    }
-    
-    .container {
-        animation: fadeIn 0.5s ease-out;
-    }
-
-
-    /* --- Arrière-plan subtil --- */
-    .background-pattern {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: radial-gradient(circle at 10% 20%, var(--accent-glow) 0%, transparent 25%),
-                    radial-gradient(circle at 90% 80%, rgba(131, 58, 180, 0.2) 0%, transparent 25%);
-        pointer-events: none; opacity: 0.5;
-    }
-
     .hidden { display: none !important; }
 
-    /* --- Animations --- */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+    /* --- STRUCTURE DE LA PAGE --- */
+    .container {
+        flex-grow: 1; display: flex; flex-direction: column;
+        position: relative; min-height: 0;
     }
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
-        50% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(102, 126, 234, 0); }
-    }
+    .app-footer { flex-shrink: 0; }
+    .background-pattern { position: absolute; z-index: -1; top: 0; left: 0; right: 0; bottom: 0; }
 
-    /*
-    =========================================
-    --- MODAL D'AUTHENTIFICATION ---
-    =========================================
-    */
+    /* --- ANIMATIONS & PARTICULES --- */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); } }
+    #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+    
+    /* NOUVELLE VERSION CORRIGÉE - A UTILISER */
+    .auth-overlay {
+        flex-grow: 1; /* Permet de prendre toute la hauteur disponible */
+        background: transparent; /* Le fond est déjà sur le body */
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-out;
+        width: 100%;
+        height: 100%;
+    }
     .auth-modal {
         background: var(--bg-glass); border: 1px solid var(--border-glass);
-        padding: 24px; border-radius: var(--radius-large);
-        width: 100%; /* Le modal prend toute la largeur de son conteneur #authOverlay */
-        max-width: 310px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        animation: slideIn 0.4s ease-out;
+        padding: 18px; border-radius: var(--radius-large);
+        width: 100%; max-width: 290px;
+        text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.4s ease-out; position: relative;
+        max-height: 90vh; overflow-y: auto;
     }
-    .auth-header { margin-bottom: 24px; }
+    .auth-header { margin-bottom: 18px; }
     .auth-logo {
-        width: 50px; height: 50px; background: linear-gradient(45deg, #ff6b6b, #feca57);
-        border-radius: 50%; margin: 0 auto 12px; display: flex;
-        align-items: center; justify-content: center; font-size: 24px;
+        width: 40px; height: 40px; background: linear-gradient(45deg, #ff6b6b, #feca57);
+        border-radius: 50%; margin: 0 auto 10px; display: flex;
+        align-items: center; justify-content: center; font-size: 20px;
     }
-    .auth-header h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-    .auth-header p { color: var(--text-secondary); font-size: 13px; }
+    .auth-header h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .auth-header p { color: var(--text-secondary); font-size: 12px; }
     .auth-tabs {
-        display: flex; gap: 5px; margin-bottom: 20px;
-        background: rgba(0, 0, 0, 0.2); border-radius: 25px; padding: 4px;
+        display: flex; gap: 3px; margin-bottom: 16px;
+        background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 3px;
     }
     .auth-tab {
-        flex: 1; padding: 8px 12px; border: none; border-radius: 20px;
-        background: transparent; color: var(--text-secondary);
-        font-size: 13px; font-weight: 500; cursor: pointer;
-        transition: all var(--transition-fast);
+        flex: 1; padding: 6px 8px; border: none; border-radius: 16px;
+        background: transparent; color: var(--text-secondary); font-size: 11px;
+        font-weight: 500; cursor: pointer; transition: all var(--transition-fast);
     }
     .auth-tab:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
     .auth-tab.active { background: rgba(255, 255, 255, 0.15); color: var(--text-primary); }
     .auth-form {
-        display: flex; flex-direction: column; gap: 12px;
-        min-height: 210px; justify-content: center;
+        min-height: 180px; display: flex; flex-direction: column;
+        gap: 10px; justify-content: center;
     }
     .auth-input {
-        padding: 12px 15px; border: 1px solid var(--border-glass); border-radius: var(--radius-small);
-        background: var(--bg-glass); color: var(--text-primary);
-        font-size: 14px; outline: none; transition: all var(--transition-fast);
+        width: 100%; padding: 10px 12px; border: 1px solid var(--border-glass);
+        border-radius: var(--radius-small); background: var(--bg-glass);
+        color: var(--text-primary); font-size: 13px; outline: none;
+        transition: all var(--transition-fast);
     }
     .auth-input::placeholder { color: var(--text-secondary); }
     .auth-input:focus { border-color: rgba(102, 126, 234, 0.8); box-shadow: 0 0 10px var(--accent-glow); }
     .auth-button {
-        padding: 12px 20px; border: none; border-radius: var(--radius-small);
+        padding: 10px 16px; border: none; border-radius: var(--radius-small);
+        background: var(--accent-gradient); color: var(--text-primary);
+        font-size: 13px; font-weight: 600; cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    .auth-button:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); }
+    .guest-button { background: rgba(255, 255, 255, 0.1); }
+    .auth-error { color: var(--error-color); font-size: 11px; margin-top: 6px; min-height: 14px; }
+    .guest-info { color: var(--text-secondary); font-size: 12px; margin-bottom: 10px; }
+    
+    /* --- INTERFACE PRINCIPALE --- */
+    .header {
+        position: relative; text-align: center;
+        padding-top: 16px; margin-bottom: 20px; flex-shrink: 0;
+    }
+    .header-actions { position: absolute; top: 0; right: 0; }
+    .header-btn {
+        background: transparent; border: none; border-radius: 50%;
+        width: 32px; height: 32px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-secondary); transition: all var(--transition-fast);
+    }
+    .header-btn:hover { background: var(--bg-glass); color: var(--text-primary); }
+
+    .search-container { 
+        padding: 0 16px; margin-bottom: 16px; flex-shrink: 0;
+        position: relative;
+    }
+    .search-input {
+        width: 100%; padding: 12px 40px 12px 18px; border: 1px solid var(--border-glass);
+        border-radius: var(--radius-small); background: var(--bg-glass);
+        backdrop-filter: blur(10px); color: var(--text-primary);
+        font-size: 14px; outline: none; transition: all var(--transition-fast);
+    }
+    .search-input::placeholder { color: var(--text-secondary); }
+    .search-input:focus { border-color: rgba(102, 126, 234, 0.8); box-shadow: 0 0 15px var(--accent-glow); }
+    .search-icon { position: absolute; right: 31px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+
+    .category-tabs { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; flex-shrink: 0; }
+    .category-tab {
+        flex: 1; padding: 8px 12px; border: 1px solid transparent;
+        border-radius: var(--radius-small); background: var(--bg-glass);
+        color: var(--text-secondary); font-size: 13px; font-weight: 500;
+        cursor: pointer; transition: all var(--transition-fast);
+    }
+    .category-tab.active { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
+
+    /* NOUVEAUX STYLES POUR LES LIENS RECTANGULAIRES */
+    .links-container {
+        flex-grow: 1; overflow-y: auto; padding: 0 16px;
+        display: flex; flex-direction: column; gap: 8px;
+    }
+    .link-item {
+        display: flex; align-items: center;
+        padding: 12px 16px; background: var(--bg-glass); border: 1px solid var(--border-glass);
+        border-radius: var(--radius-medium); text-decoration: none; color: var(--text-primary);
+        transition: all var(--transition-fast); width: 100%;
+        min-height: 60px;
+    }
+    .link-item:hover { transform: translateY(-2px); box-shadow: 0 3px 15px var(--accent-glow); }
+    .link-icon {
+        background: transparent; display: flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; margin-right: 12px; flex-shrink: 0;
+    }
+    .favicon-img { width: 100%; height: 100%; border-radius: 6px; object-fit: contain; }
+    .link-content { 
+        flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
+        text-align: left; min-width: 0;
+    }
+    .link-name { 
+        font-size: 14px; font-weight: 500; margin-bottom: 2px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .link-description { 
+        font-size: 11px; color: var(--text-secondary);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    
+    /* BOUTONS LIKE/DISLIKE */
+    .link-actions {
+        display: flex; gap: 8px; align-items: center; margin-left: 8px;
+        flex-shrink: 0;
+    }
+    .like-btn, .dislike-btn {
+        background: transparent; border: none; cursor: pointer;
+        padding: 4px; border-radius: 4px; transition: all var(--transition-fast);
+        color: var(--text-secondary); font-size: 14px;
+        display: flex; align-items: center; gap: 2px;
+    }
+    .like-btn:hover { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .dislike-btn:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .like-btn.active { color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+    .dislike-btn.active { color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+    .like-count, .dislike-count {
+        font-size: 11px; font-weight: 500;
+    }
+
+    .stats {
+        flex-shrink: 0; display: flex; justify-content: space-around;
+        padding: 16px 8px; margin-top: auto;
+        border-top: 1px solid var(--border-glass);
+    }
+    
+    .app-footer {
+        flex-shrink: 0; padding: 12px 16px; border-top: 1px solid var(--border-glass);
+        background: rgba(18, 26, 58, 0.5); backdrop-filter: blur(5px);
+    }
+    .add-link-cta {
+        width: 100%; padding: 12px; border: none; border-radius: var(--radius-small);
         background: var(--accent-gradient); color: var(--text-primary);
         font-size: 14px; font-weight: 600; cursor: pointer;
         transition: all var(--transition-fast);
     }
-    .auth-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
-    .guest-button { background: rgba(255, 255, 255, 0.1); }
-    .guest-info { font-size: 12px; color: var(--text-secondary); opacity: 0.8; margin-bottom: 10px; }
-    .auth-error { color: var(--error-color); font-size: 12px; margin-top: 8px; min-height: 16px; }
+    .add-link-cta:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--accent-glow); }
 
-    /*
-    ===============================
-    --- INTERFACE PRINCIPALE ---
-    ===============================
-    */
-    .header { text-align: center; margin-bottom: 24px; padding-top: 24px; }
-    .logo {
-        width: 50px; height: 50px; background: linear-gradient(45deg, #ff6b6b, #feca57);
-        border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;
-        font-size: 24px; animation: pulse 2.5s infinite cubic-bezier(0.45, 0, 0.55, 1);
+    /* --- NOTIFICATIONS --- */
+    .notification {
+        position: fixed; top: 20px; right: 20px;
+        padding: 12px 20px; border-radius: var(--radius-small);
+        color: white; font-size: 13px; font-weight: 500; z-index: 2000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        animation: slideInRight 0.3s ease, slideOutRight 0.3s ease 2.7s forwards;
     }
-    .title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-    .subtitle { font-size: 13px; color: var(--text-secondary); }
-    .search-container { position: relative; margin-bottom: 20px; padding: 0 24px; }
-    .search-input {
-        width: 100%; padding: 12px 40px 12px 18px; border: 1px solid var(--border-glass);
-        border-radius: var(--radius-small); background: var(--bg-glass); backdrop-filter: blur(10px);
-        color: var(--text-primary); font-size: 14px; outline: none; transition: all var(--transition-fast);
-    }
-    .search-input::placeholder { color: var(--text-secondary); }
-    .search-input:focus { background: rgba(255, 255, 255, 0.08); border-color: rgba(102, 126, 234, 0.8); box-shadow: 0 0 15px var(--accent-glow); }
-    .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-    .category-tabs { display: flex; gap: 8px; margin-bottom: 20px; padding: 0 24px; }
-    .category-tab {
-        flex: 1; padding: 8px 12px; border: 1px solid transparent; border-radius: var(--radius-small);
-        background: var(--bg-glass); color: var(--text-secondary); font-size: 13px; font-weight: 500;
-        cursor: pointer; transition: all var(--transition-fast); text-align: center;
-    }
-    .category-tab:hover { background: rgba(255, 255, 255, 0.08); }
-    .category-tab.active { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border-color: var(--border-glass); }
-    .links-container {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
-        height: 250px; /* Hauteur fixe pour éviter les sauts de page */
-        overflow-y: auto; padding: 0 16px 0 24px;
-    }
-    .link-item {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        padding: 16px; background: var(--bg-glass); border: 1px solid var(--border-glass);
-        border-radius: var(--radius-medium); text-decoration: none; color: var(--text-primary);
-        transition: all var(--transition-fast); text-align: center; aspect-ratio: 1 / 1;
-    }
-    .link-item:hover {
-        transform: translateY(-4px); background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(102, 126, 234, 0.6); box-shadow: 0 5px 20px var(--accent-glow);
-    }
-    .link-icon { font-size: 28px; margin-bottom: 8px; line-height: 1; }
-    .link-name { font-size: 14px; font-weight: 500; }
-    .link-description { display: none; }
-    .stats {
-        display: flex; justify-content: space-around; padding: 20px 24px;
-        margin-top: 12px; border-top: 1px solid var(--border-glass);
-    }
-    .stat-item { text-align: center; }
-    .stat-number { font-size: 18px; font-weight: 600; }
-    .stat-label { font-size: 11px; color: var(--text-secondary); }
-    .links-container::-webkit-scrollbar { width: 4px; }
-    .links-container::-webkit-scrollbar-track { background: transparent; }
-    .links-container::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 4px; }
-    .links-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-    
-    .link-icon {
-    /* On enlève le fond coloré et on s'assure que l'image est bien centrée */
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px; /* Taille fixe pour l'icône */
-    height: 32px;
-    margin-bottom: 8px;}
-    
-    .favicon-img {
-    width: 100%; /* L'image prend toute la place de son parent .link-icon */
-    height: 100%;
-    border-radius: 6px; /* Adoucit les coins des logos carrés */
-    object-fit: contain; /* S'assure que le logo n'est pas déformé */}
-    
-    /* On ajuste le layout du link-item pour qu'il reste centré */
-    
-    .link-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;}
-  
-  </style>
+    .notification.success { background: var(--success-gradient); }
+    .notification.error { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+    .notification.info { background: linear-gradient(45deg, #3498db, #2980b9); }
+
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+</style>
 </head>
+
 <body>
     <div class="background-pattern"></div>
+    <div id="particles"></div>
 
-    <!-- Conteneur principal de l'application (visible après connexion) -->
     <div class="container" style="display: none;">
-        
-        <!-- Bouton Déconnexion en haut à droite -->
-        <button id="logoutButton" class="header-action-btn" title="Déconnexion"></button>
-
         <div class="header">
+            <div class="header-actions">
+                <button id="logoutButton" class="header-btn" title="Déconnexion"></button>
+            </div>
             <div class="logo">🎬</div>
-            <h1 class="title">FindMyDream</h1>
+            <h1 class="title">FindMyStream</h1>
             <p class="subtitle">Vos liens favoris à portée de clic</p>
         </div>
-
         <div class="search-container">
             <input type="text" id="searchInput" class="search-input" placeholder="Rechercher...">
             <span class="search-icon">🔍</span>
         </div>
-
         <div class="category-tabs">
             <button class="category-tab active" data-category="all">Tous</button>
             <button class="category-tab" data-category="streaming">Stream</button>
             <button class="category-tab" data-category="tools">Outils</button>
             <button class="category-tab" data-category="social">Social</button>
         </div>
-
         <div class="links-container" id="linksContainer"></div>
-
-        <div class="no-results hidden" id="noResults">
-            Aucun résultat trouvé 😔
+        <div class="no-results hidden" id="noResults">Aucun résultat trouvé 😔</div>
+        <div class="stats">
+            <div class="stat-item"><div class="stat-number" id="totalLinks">0</div><div class="stat-label">Sites</div></div>
+            <div class="stat-item"><div class="stat-number" id="clickCount">0</div><div class="stat-label">Clics</div></div>
         </div>
-
     </div>
 
-    <!-- Pied de page avec les boutons d'action -->
     <footer class="app-footer" style="display: none;">
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-number" id="totalLinks">0</div>
-                <div class="stat-label">Sites</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="clickCount">0</div>
-                <div class="stat-label">Clics</div>
-            </div>
-        </div>
-        <div class="action-buttons">
-            <button id="settingsButton" class="footer-btn" title="Paramètres"></button>
-            <button id="addLinkButton" class="footer-btn cta" title="Ajouter un lien"></button>
-        </div>
+        <button id="addLinkButton" class="add-link-cta">Ajouter un lien</button>
     </footer>
 
-    <!-- Overlay d'authentification -->
     <div id="authOverlay"></div>
+    
+    <!-- LIAISON VERS LE FICHIER JS EXTERNE -->
     <script type="module" src="popup.js"></script>
 </body>
 </html>
